@@ -1,0 +1,61 @@
+version: "3.8"
+
+services:
+  app:
+    image: josephtie/hyban:latest
+    container_name: hyban-app-demo
+    restart: always
+    ports:
+      - "8082:8080"
+    depends_on:
+      - db
+    environment:      
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/hyban_demo_db
+      SPRING_DATASOURCE_USERNAME: directus
+      SPRING_DATASOURCE_PASSWORD: directus
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+    volumes:
+      - hyban_demo_storage:/uploads/documents
+    networks:
+      - hyban-demo-network
+
+  db:
+    image: postgis/postgis:13-master
+    container_name: hyban-db-demo
+    restart: always
+    environment:
+      POSTGRES_DB: hyban_demo_db
+      POSTGRES_USER: directus
+      POSTGRES_PASSWORD: directus
+    ports:
+      - "15432:5432"
+    volumes:
+      - postgres_demo_data:/var/lib/postgresql/data
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+    networks:
+      - hyban-demo-network
+
+  adminer:
+    image: adminer
+    container_name: hyban-adminer-demo
+    ports:
+      - "8083:8080"
+    networks:
+      - hyban-demo-network
+
+  carbone:
+    image: carbone/carbone-ee:latest-fonts
+    container_name: carbone-demo
+    ports:
+      - "4001:4000"
+    environment:
+      - CARBONE_EE_STUDIO=true
+    networks:
+      - hyban-demo-network
+
+networks:
+  hyban-demo-network:
+
+volumes:
+  postgres_demo_data:
+  hyban_demo_storage:
